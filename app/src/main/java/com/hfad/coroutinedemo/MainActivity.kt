@@ -12,8 +12,20 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.SeekBar
 import com.hfad.coroutinedemo.databinding.ActivityMainBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
+    suspend fun performTask(tasknumber: Int): Deferred<String> =
+        coroutineScope.async(Dispatchers.Main) {
+            delay(5_000)
+            return@async "Finished Coroutine ${tasknumber}"
+        }
+
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
@@ -42,6 +54,14 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun launchCoroutines(view: View) {}
+    fun launchCoroutines(view: View) {
+        (1..count).forEach {
+            binding.statusText.text = "Started Coroutine ${it}"
+            coroutineScope.launch(Dispatchers.Main) {
+                binding.statusText.text = performTask(it).await()
+            }
+        }
+
+    }
 
 }
